@@ -48,7 +48,15 @@ vocab_size = tokenizer.vocab_size
 # Datasets & DataLoaders
 # -----------------------------
 maze_ds = MazeDatasetV3(n_samples=n_maze, size=maze_size)
-maze_loader = DataLoader(maze_ds, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
+from utils.collate_v3 import maze_collate_fn
+
+maze_loader = DataLoader(
+    maze_dataset,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=2,
+    collate_fn=maze_collate_fn
+)
 
 code_ds = CodeDataset(tokenizer, n_samples=n_code, max_len=128)
 code_loader = DataLoader(code_ds, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
