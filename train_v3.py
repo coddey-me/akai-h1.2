@@ -30,7 +30,7 @@ low_hidden = 512
 # training
 maze_size = 100              # must match ConvEmbedV3 fc assumptions (100x100 default)
 batch_size = 16
-epochs = 10
+epochs = 5
 lr = 1e-4
 save_dir = "checkpoints"
 os.makedirs(save_dir, exist_ok=True)
