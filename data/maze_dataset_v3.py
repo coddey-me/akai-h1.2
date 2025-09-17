@@ -15,10 +15,10 @@ class MazeDatasetV3(Dataset):
     """
     def __init__(self, precomputed_file=None):
         data = torch.load(precomputed_file)
-
+        filtered = [(m, p) for m, p in zip(data["mazes"], data["paths"]) if len(p) > 0]
         # handle both formats
         if isinstance(data, dict) and "mazes" in data and "paths" in data:
-            self.mazes = data["mazes"]
+            self.mazes, self.paths = zip(*filtered)
             self.paths = data["paths"]
         else:
             # assume list of (maze, path)
