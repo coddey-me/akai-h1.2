@@ -13,7 +13,7 @@ from models.hrm_v2 import HRM_V2
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # === Hyperparameters ===
-maze_size = 100
+maze_size = 50
 batch_size = 32
 epochs = 300
 lr = 1e-3
