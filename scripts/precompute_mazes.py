@@ -8,7 +8,7 @@ from functools import partial
 from tqdm import tqdm
 from data.generate_maze_v3 import generate_maze_and_path
 
-def make_one(size):
+def make_one(size, _):
     maze, path = generate_maze_and_path(size=size)
     return torch.tensor(maze, dtype=torch.float).unsqueeze(0), torch.tensor(path, dtype=torch.long)
 
