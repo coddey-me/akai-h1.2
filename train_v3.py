@@ -116,47 +116,64 @@ def pad_token_batch(inputs, targets):
     # Ensure tensors are on device
     return inputs.to(device), targets.to(device)
 
-def eval_on_small_batches(model, n_eval=64):
+def eval_on_small_batches(model, n_eval=64, device=device):
     model.eval()
     maze_accs = []
     token_accs = []
-    # Maze eval: sample a few
+
+    # Maze eval
     with torch.no_grad():
         for _ in range(8):
             try:
                 mazes, paths = next(maze_iter)
             except StopIteration:
                 break
-            mazes = mazes.to(device)
-            padded, max_len = pad_action_sequences(paths)
+
+            # Filter out empty paths
+            non_empty = [i for i, p in enumerate(paths) if len(p) > 0]
+            if len(non_empty) == 0:
+                continue  # skip batch if all paths are empty
+
+            mazes = mazes[non_empty].to(device)
+            paths = [paths[i] for i in non_empty]
+
+            # Pad paths safely
+            padded, max_len = pad_action_sequences(paths, pad_value=-100)
             targets = padded.to(device)
-            # ensure channel dimension
+
             if mazes.ndim == 3:
-                mazes = mazes.unsqueeze(1)
-            logits = model(mazes, seq_len=max_len, task='maze')  # [B,seq,4]
-            preds = logits.argmax(dim=-1)  # [B,seq]
+                mazes = mazes.unsqueeze(1)  # ensure channel dimension
+
+            logits = model(mazes, seq_len=max_len, task='maze')  # [B, seq_len, n_actions]
+            preds = logits.argmax(dim=-1)
             mask = targets != -100
             correct = (preds == targets) & mask
             acc = correct.sum().item() / max(1, mask.sum().item())
             maze_accs.append(acc)
+
         # Token eval (code)
         for _ in range(4):
             try:
                 inp, tgt = next(code_iter)
             except StopIteration:
                 break
-            b_inp, b_tgt = pad_token_batch(inp, tgt)
-            # create dummy mazes as context
+
+            b_inp = inp.to(device)
+            b_tgt = tgt.to(device)
+            seq_len = b_inp.size(1)
+
+            # dummy maze context
             dummy = torch.zeros((b_inp.size(0), 1, maze_size, maze_size), device=device)
-            logits = model(dummy, seq_len=b_inp.size(1), task='text')
+            logits = model(dummy, seq_len=seq_len, task='text')
             preds = logits.argmax(dim=-1)
-            acc = (preds == b_tgt.to(device)).float().mean().item()
+            acc = (preds == b_tgt).float().mean().item()
             token_accs.append(acc)
-    # reset model to train mode
+
     model.train()
-    maze_acc = sum(maze_accs) / max(1, len(maze_accs)) if maze_accs else 0.0
-    token_acc = sum(token_accs) / max(1, len(token_accs)) if token_accs else 0.0
+    maze_acc = sum(maze_accs) / max(1, len(maze_accs))
+    token_acc = sum(token_accs) / max(1, len(token_accs))
     return maze_acc, token_acc
+
 
 # -----------------------------
 # Training loop
