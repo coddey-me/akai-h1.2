@@ -2,8 +2,13 @@ import torch
 from torch.utils.data import Dataset
 from .generate_maze import generate_maze
 
+
+#v1 = samples 1000, size 8
+#v2 = samples 3000, size 20
+#v3 = samples 10000, size 35
+
 class MazeDataset(Dataset):
-    def __init__(self, n_samples=3000, size=20):
+    def __init__(self, n_samples=10000, size=35):
         self.data = []
         for _ in range(n_samples):
             maze, path = generate_maze(size=size)
