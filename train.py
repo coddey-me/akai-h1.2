@@ -48,11 +48,22 @@ for epoch in range(epochs):
         padded_paths = torch.full((len(paths), max_len), 0, dtype=torch.long)
         for i,p in enumerate(paths):
             padded_paths[i,:len(p)] = p
-        mazes = torch.cat(mazes, dim=0).to(device)
+        
+        mazes = torch.cat(mazes, dim=0).to(device)  # (B,H,W) probably
         targets = padded_paths.to(device)
-
+        
+        # === FIX: ensure mazes has shape (B,1,H,W) ===
+        if mazes.ndim == 3:
+            mazes = mazes.unsqueeze(1)  # (B,1,H,W)
+        
+        if mazes.ndim == 4 and mazes.shape[1] != 1:
+            # average across channels to get 1 channel
+            mazes = mazes.mean(dim=1, keepdim=True)  # (B,1,H,W)
+        # === END FIX ===
+        
         optimizer.zero_grad()
         logits = model(mazes, seq_len=max_len)
+
         logits = logits.view(-1,4)
         targets = targets.view(-1)
         loss = criterion(logits, targets)
