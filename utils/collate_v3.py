@@ -3,21 +3,20 @@ import torch
 
 import torch
 def safe_maze_collate(batch):
-    """
-    batch: list of tuples (maze_tensor, path_tensor)
-    Pads paths to the max length in the batch.
-    Returns:
-        mazes: [B, 1, H, W]
-        paths: [B, max_len]
-    """
     mazes, paths = zip(*batch)
-
-    # Stack mazes (assumes all maze images same shape)
-    mazes = torch.stack(mazes, dim=0)
-
-    # Pad paths
-    padded_paths, _ = pad_action_sequences(paths, pad_value=-100)
-
+    
+    # Stack mazes (images must be same size HxW)
+    mazes = torch.stack([m if m.ndim == 3 else m.unsqueeze(0) for m in mazes], dim=0)
+    
+    # Pad paths to max length
+    lengths = [len(p) if isinstance(p, torch.Tensor) else len(torch.as_tensor(p)) for p in paths]
+    max_len = max(lengths) if lengths else 1  # avoid zero-length
+    padded_paths = torch.full((len(paths), max_len), -100, dtype=torch.long)
+    for i, p in enumerate(paths):
+        p_tensor = p if isinstance(p, torch.Tensor) else torch.as_tensor(p, dtype=torch.long)
+        if p_tensor.numel() > 0:  # skip empty paths
+            padded_paths[i, :p_tensor.size(0)] = p_tensor
+    
     return mazes, padded_paths
 
 def pad_collate(batch):
