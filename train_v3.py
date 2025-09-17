@@ -57,7 +57,7 @@ from utils.collate_v3 import maze_collate_fn, collate_fn, pad_collate
 maze_loader = DataLoader(
     maze_dataset,
     batch_size=batch_size,
-    shuffle=True,
+    shuffle=False,
     num_workers=2,
     collate_fn=pad_collate
 )
