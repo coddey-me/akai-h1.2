@@ -42,8 +42,7 @@ def collate_fn(batch):
         padded_paths[i, :len(p)] = torch.tensor(p, dtype=torch.long)
     return mazes, padded_paths
 
-loader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
-
+               
 def maze_collate_fn(batch):
     """
     batch: list of (maze_tensor, path_tensor)
