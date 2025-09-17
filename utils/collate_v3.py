@@ -5,15 +5,16 @@ import torch
 
 def pad_collate(batch):
     mazes, paths = zip(*batch)
-    mazes = torch.stack(mazes)  # (B, 1, H, W)
+    mazes = torch.stack(mazes)  # mazes are always same shape
     
-    max_len = max(len(p) for p in paths)  # pad to the longest path in the batch
+    max_len = max(len(p) for p in paths)  # longest path in batch
     padded_paths = torch.zeros(len(paths), max_len, dtype=torch.long)
     
     for i, p in enumerate(paths):
         padded_paths[i, :len(p)] = torch.tensor(p, dtype=torch.long)
     
     return mazes, padded_paths
+
 
 
 def collate_fn(batch):
