@@ -93,28 +93,22 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 # -----------------------------
 # Helper functions
 # -----------------------------
-
 def pad_action_sequences(paths, pad_value=0):
-    """
-    Pads a list of 1D tensors (paths) to the same length.
-    Returns (padded_tensor, max_len)
-    """
+    # Filter out empty paths
+    paths = [p for p in paths if len(p) > 0]
     if len(paths) == 0:
-        return torch.empty(0), 1
+        return torch.zeros(1,1,dtype=torch.long), 1  # dummy safe tensor
 
-    # get each path’s length
     lengths = [p.size(0) if isinstance(p, torch.Tensor) else len(p) for p in paths]
     max_len = max(lengths)
 
-    # create padded tensor
     padded = torch.full((len(paths), max_len), pad_value, dtype=torch.long)
-
     for i, p in enumerate(paths):
-        # make sure p is tensor
         p_tensor = p if isinstance(p, torch.Tensor) else torch.as_tensor(p, dtype=torch.long)
         padded[i, :len(p_tensor)] = p_tensor
 
     return padded, max_len
+
 
 
 def pad_token_batch(inputs, targets):
