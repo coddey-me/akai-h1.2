@@ -80,7 +80,6 @@ model = HRM_V3(embed_dim=embed_dim,
                high_hidden=high_hidden,
                low_hidden=low_hidden,
                n_actions=4,
-               maze_size=maze_size,
                vocab_size=vocab_size).to(device)
 
 # Losses
