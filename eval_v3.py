@@ -30,15 +30,13 @@ correct = 0
 total = 0
 
 with torch.no_grad():
-    for mazes, paths in loader:
-        mazes, paths = mazes.to(device), paths.to(device)
-        logits = model(mazes, seq_len=seq_len, task='maze')  # (B,seq_len,4)
-        preds = logits.argmax(-1)  # predicted actions
+    for mazes, paths in maze_loader:
+      mazes = mazes.to(device)
+      paths = paths.to(device)
+      seq_len = paths.size(1)
+  
+      logits = model(mazes, seq_len=seq_len, task='maze')
+      preds = logits.argmax(dim=-1)
 
-        # Compare only up to the true path length
-        min_len = min(paths.size(1), preds.size(1))
-        match = (preds[:, :min_len] == paths[:, :min_len]).float().mean(dim=1)
-        correct += match.sum().item()
-        total += match.size(0)
 
 print(f"Average path agreement: {correct/total:.4f}")
