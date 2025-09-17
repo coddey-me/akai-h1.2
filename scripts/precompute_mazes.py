@@ -3,7 +3,7 @@ import torch
 from multiprocessing import Pool, cpu_count
 from functools import partial
 from tqdm import tqdm
-from data.generate_maze_v3 import generate_maze_and_path
+from .data.generate_maze_v3 import generate_maze_and_path
 
 def make_one(size):
     maze, path = generate_maze_and_path(size=size)
