@@ -9,7 +9,7 @@ class HRM_V3(nn.Module):
     Handles maze solving + text/code generation.
     """
     def __init__(self, embed_dim=256, high_hidden=512, low_hidden=512,
-                 n_actions=4, vocab_size=500, maze_size=100):
+                 n_actions=4, vocab_size=500, maze_size=maze_size):
         super().__init__()
         self.encoder = ConvEmbedV3(in_ch=1, embed_dim=embed_dim, input_size=maze_size)
 
