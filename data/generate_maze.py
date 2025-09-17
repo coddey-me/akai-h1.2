@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 
-def generate_maze(size=8, wall_prob=0.2):
+def generate_maze(size=40, wall_prob=0.2):
     """Generate random maze with start and goal, plus shortest path."""
     maze = (np.random.rand(size, size) < wall_prob).astype(np.int32)
     maze[0, 0] = 0  # start
