@@ -8,7 +8,7 @@ from .generate_maze import generate_maze
 #v3 = samples 10000, size 35
 
 class MazeDataset(Dataset):
-    def __init__(self, n_samples=40000, size=50):
+    def __init__(self, n_samples=10000, size=40):
         self.data = []
         for _ in range(n_samples):
             maze, path = generate_maze(size=size)
