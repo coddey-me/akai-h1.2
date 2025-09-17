@@ -52,14 +52,14 @@ from torch.utils.data import DataLoader
 
 maze_dataset = MazeDatasetV3(precomputed_file="precomputed_mazes.pt")
 
-from utils.collate_v3 import maze_collate_fn, collate_fn
+from utils.collate_v3 import maze_collate_fn, collate_fn, pad_collate
 
 maze_loader = DataLoader(
     maze_dataset,
     batch_size=batch_size,
     shuffle=True,
     num_workers=2,
-    collate_fn=collate_fn
+    collate_fn=pad_collate
 )
 
 code_ds = CodeDataset(tokenizer, n_samples=n_code, max_len=128)
