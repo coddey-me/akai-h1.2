@@ -15,11 +15,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # === Hyperparameters ===
 maze_size = 50
 batch_size = 32
-epochs = 300
+epochs = 100
 lr = 1e-3
 
 # === Data ===
-dataset = MazeDataset(n_samples=100000, size=maze_size)
+dataset = MazeDataset(n_samples=40000, size=maze_size)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: x)
 
 # === Model ===
