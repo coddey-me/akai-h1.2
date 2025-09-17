@@ -5,7 +5,7 @@ from data.maze_dataset_v3 import MazeDatasetV3
 from torch.utils.data import DataLoader
 
 # --- CONFIG ---
-checkpoint_path = "checkpoints/hrm_v3_epoch10.pt"
+checkpoint_path = "checkpoints/hrm_v3_epoch5.pt"
 precomputed_file = "precomputed_mazes.pt"   # or your test file
 maze_size = 50  # your maze size during training
 batch_size = 16
