@@ -30,7 +30,7 @@ correct = 0
 total = 0
 
 with torch.no_grad():
-    for mazes, paths in maze_loader:
+    for mazes, paths in loader:
       mazes = mazes.to(device)
       paths = paths.to(device)
       seq_len = paths.size(1)
