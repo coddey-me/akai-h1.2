@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 from .generate_maze import generate_maze
 
 class MazeDataset(Dataset):
-    def __init__(self, n_samples=1000, size=8):
+    def __init__(self, n_samples=3000, size=20):
         self.data = []
         for _ in range(n_samples):
             maze, path = generate_maze(size=size)
