@@ -100,7 +100,7 @@ def pad_action_sequences(paths, pad_value=0):
     Returns (padded_tensor, max_len)
     """
     if len(paths) == 0:
-        return torch.empty(0), 0
+        return torch.empty(0), 1
 
     # get each path’s length
     lengths = [p.size(0) if isinstance(p, torch.Tensor) else len(p) for p in paths]
