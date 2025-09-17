@@ -125,4 +125,107 @@ def eval_on_small_batches(model, n_eval=64):
         for _ in range(4):
             try:
                 inp, tgt = next(code_iter)
-            except StopIteration
+            except StopIteration:
+                break
+            b_inp, b_tgt = pad_token_batch(inp, tgt)
+            # create dummy mazes as context
+            dummy = torch.zeros((b_inp.size(0), 1, maze_size, maze_size), device=device)
+            logits = model(dummy, seq_len=b_inp.size(1), task='text')
+            preds = logits.argmax(dim=-1)
+            acc = (preds == b_tgt.to(device)).float().mean().item()
+            token_accs.append(acc)
+    # reset model to train mode
+    model.train()
+    maze_acc = sum(maze_accs) / max(1, len(maze_accs)) if maze_accs else 0.0
+    token_acc = sum(token_accs) / max(1, len(token_accs)) if token_accs else 0.0
+    return maze_acc, token_acc
+
+# -----------------------------
+# Training loop
+# -----------------------------
+print("Starting training")
+global_step = 0
+start_time = time.time()
+for epoch in range(1, epochs + 1):
+    epoch_loss = 0.0
+    epoch_steps = 0
+
+    # We'll run for as many batches as the largest loader for this epoch
+    max_batches = max(len(maze_loader), len(code_loader), len(convo_loader))
+    # Round-robin: maze -> code -> convo -> repeat
+    task_cycle = ["maze", "code", "convo"]
+
+    for batch_idx in range(max_batches):
+        for task in task_cycle:
+            try:
+                if task == "maze":
+                    mazes, paths = next(maze_iter)
+                    # mazes: (B,1,H,W) already, paths: list of tensors
+                    # ensure channel dim
+                    mazes = mazes.to(device)
+                    if mazes.ndim == 3:
+                        mazes = mazes.unsqueeze(1)
+                    padded_targets, seq_len = pad_action_sequences(paths)
+                    targets = padded_targets.to(device)  # (B,seq_len)
+                    # Forward
+                    logits = model(mazes, seq_len=seq_len, task='maze')  # (B,seq_len,4)
+                    logits_flat = logits.view(-1, logits.size(-1))      # (B*seq_len,4)
+                    targets_flat = targets.view(-1)                    # (B*seq_len,)
+                    loss = action_criterion(logits_flat, targets_flat)
+                elif task == "code":
+                    inp, tgt = next(code_iter)
+                    # inp/tgt: (B,L)
+                    inp = inp.to(device)
+                    tgt = tgt.to(device)
+                    seq_len = inp.size(1)
+                    # dummy maze context
+                    dummy = torch.zeros((inp.size(0), 1, maze_size, maze_size), device=device)
+                    logits = model(dummy, seq_len=seq_len, task='text')  # (B,seq_len,vocab)
+                    logits_flat = logits.view(-1, logits.size(-1))
+                    targets_flat = tgt.view(-1)
+                    loss = token_criterion(logits_flat, targets_flat)
+                else:  # convo
+                    inp, tgt = next(convo_iter)
+                    inp = inp.to(device)
+                    tgt = tgt.to(device)
+                    seq_len = inp.size(1)
+                    dummy = torch.zeros((inp.size(0), 1, maze_size, maze_size), device=device)
+                    logits = model(dummy, seq_len=seq_len, task='text')
+                    logits_flat = logits.view(-1, logits.size(-1))
+                    targets_flat = tgt.view(-1)
+                    loss = token_criterion(logits_flat, targets_flat)
+
+            except StopIteration:
+                # Recreate iterator if exhausted
+                if task == "maze":
+                    maze_iter = iter(maze_loader)
+                elif task == "code":
+                    code_iter = iter(code_loader)
+                else:
+                    convo_iter = iter(convo_loader)
+                continue  # skip this iteration (iterators reset)
+
+            # backward & step
+            optimizer.zero_grad()
+            loss.backward()
+            # gradient clipping for stability
+            nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
+            optimizer.step()
+
+            epoch_loss += loss.item()
+            epoch_steps += 1
+            global_step += 1
+
+    avg_loss = epoch_loss / max(1, epoch_steps)
+    elapsed = time.time() - start_time
+    print(f"Epoch {epoch}/{epochs}  AvgLoss: {avg_loss:.4f}  Steps: {epoch_steps}  TimeElapsed: {elapsed/60:.2f}m")
+
+    # Simple eval on small batches and save checkpoint
+    maze_acc, token_acc = eval_on_small_batches(model)
+    print(f"  [Eval] Maze acc: {maze_acc:.4f}  Token acc (code/convo): {token_acc:.4f}")
+
+    ckpt_path = os.path.join(save_dir, f"hrm_v3_epoch{epoch}.pt")
+    torch.save(model.state_dict(), ckpt_path)
+    print("  Saved checkpoint:", ckpt_path)
+
+print("Training complete.")
