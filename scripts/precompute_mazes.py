@@ -1,9 +1,12 @@
 # scripts/precompute_mazes.py
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 from multiprocessing import Pool, cpu_count
 from functools import partial
 from tqdm import tqdm
-from .data.generate_maze_v3 import generate_maze_and_path
+from data.generate_maze_v3 import generate_maze_and_path
 
 def make_one(size):
     maze, path = generate_maze_and_path(size=size)
