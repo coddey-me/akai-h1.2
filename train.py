@@ -6,6 +6,10 @@ import torch.optim as optim
 from data.dataset import MazeDataset
 from models.hrm import HRM
 
+#for v2
+from models.hrm_v2 import HRM_V2
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # === Hyperparameters ===
@@ -19,7 +23,18 @@ dataset = MazeDataset(n_samples=1000, size=maze_size)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: x)
 
 # === Model ===
-model = HRM(maze_size=maze_size).to(device)
+#add iff to recognze v2
+# choose model variant: 'v1' or 'v2'
+model_variant = 'v2'   # set to 'v2' to use the new model
+
+if model_variant == 'v2':
+    # smaller configuration to keep training fast; tweak as needed
+    model = HRM_V2(embed_dim=128, high_hidden=64, low_hidden=128, n_actions=4).to(device)
+else:
+ 
+    model = HRM(maze_size=8).to(device)
+
+
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
