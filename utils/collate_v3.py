@@ -1,6 +1,6 @@
 # utils/collate_v3.py  (new file)
 import torch
-
+from torch.utils.data import DataLoader
 import torch
 def safe_maze_collate(batch):
     mazes, paths = zip(*batch)
