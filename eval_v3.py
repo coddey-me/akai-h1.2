@@ -14,8 +14,9 @@ seq_len = 50    # how many steps to predict
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # --- LOAD MODEL ---
+# --- LOAD MODEL ---
 model = HRM_V3(embed_dim=256, high_hidden=512, low_hidden=512,
-               n_actions=4, vocab_size=500, maze_size=maze_size).to(device)
+               n_actions=4, vocab_size=59, maze_size=maze_size).to(device)
 state_dict = torch.load(checkpoint_path, map_location=device)
 model.load_state_dict(state_dict)
 model.eval()
