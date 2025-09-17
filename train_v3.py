@@ -50,7 +50,7 @@ vocab_size = tokenizer.vocab_size
 from data.maze_dataset_v3 import MazeDatasetV3
 from torch.utils.data import DataLoader
 
-dataset = MazeDatasetV3(precomputed_file="precomputed_mazes.pt")
+maze_dataset = MazeDatasetV3(precomputed_file="precomputed_mazes.pt")
 
 from utils.collate_v3 import maze_collate_fn
 
