@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 class ConvEmbedV3(nn.Module):
-    def __init__(self, in_ch=1, embed_dim=256, input_size=50):
+    def __init__(self, in_ch=1, embed_dim=256):
         super().__init__()
         self.conv1 = nn.Conv2d(in_ch, 32, 3, padding=1)
         self.pool1 = nn.MaxPool2d(2, 2)
@@ -14,21 +14,22 @@ class ConvEmbedV3(nn.Module):
         self.conv3 = nn.Conv2d(64, 128, 3, padding=1)
         self.pool3 = nn.MaxPool2d(2, 2)
 
-        # compute flatten size dynamically
-        with torch.no_grad():
-            dummy = torch.zeros(1, in_ch, input_size, input_size)
-            x = self.pool1(torch.relu(self.conv1(dummy)))
-            x = self.pool2(torch.relu(self.conv2(x)))
-            x = self.pool3(torch.relu(self.conv3(x)))
-            n_flatten = x.view(1, -1).size(1)
+        # ↓↓↓ critical line ↓↓↓
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))  
 
-        self.fc = nn.Linear(n_flatten, embed_dim)
+        # After pooling we always have 128 features
+        self.fc = nn.Linear(128, embed_dim)
 
     def forward(self, x):
-        # x: (B,1,H,W)
         x = self.pool1(torch.relu(self.conv1(x)))
         x = self.pool2(torch.relu(self.conv2(x)))
         x = self.pool3(torch.relu(self.conv3(x)))
+
+        # ↓↓↓ critical line ↓↓↓
+        x = self.global_pool(x)           # (B,128,1,1)
+
+        # flatten to (B,128)
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
+
+        x = self.fc(x)                    # (B,embed_dim)
         return x
