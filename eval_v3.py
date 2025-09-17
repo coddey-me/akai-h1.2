@@ -22,15 +22,23 @@ model.load_state_dict(state_dict)
 model.eval()
 
 # --- LOAD DATA ---
-dataset = MazeDatasetV3(precomputed_file)
-loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+maze_dataset = MazeDatasetV3(precomputed_file="precomputed_mazes.pt")
 
+from utils.collate_v3 import maze_collate_fn, collate_fn, safe_maze_collate
+
+maze_loader = DataLoader(
+    maze_dataset,
+    batch_size=batch_size,
+    shuffle=False,
+    num_workers=2,
+    collate_fn=safe_maze_collate
+)
 # --- EVAL LOOP ---
 correct = 0
 total = 0
 
 with torch.no_grad():
-    for mazes, paths in loader:
+    for mazes, paths in maze_loader:
       mazes = mazes.to(device)
       paths = paths.to(device)
       seq_len = paths.size(1)
