@@ -46,5 +46,8 @@ with torch.no_grad():
       logits = model(mazes, seq_len=seq_len, task='maze')
       preds = logits.argmax(dim=-1)
 
+if total > 0:
+    print(f"Average path agreement: {correct / total:.4f}")
+else:
+    print("Warning: No valid targets found in evaluation batch, skipping division.")
 
-print(f"Average path agreement: {correct/total:.4f}")
