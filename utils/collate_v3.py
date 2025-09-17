@@ -2,6 +2,23 @@
 import torch
 
 import torch
+def safe_maze_collate(batch):
+    """
+    batch: list of tuples (maze_tensor, path_tensor)
+    Pads paths to the max length in the batch.
+    Returns:
+        mazes: [B, 1, H, W]
+        paths: [B, max_len]
+    """
+    mazes, paths = zip(*batch)
+
+    # Stack mazes (assumes all maze images same shape)
+    mazes = torch.stack(mazes, dim=0)
+
+    # Pad paths
+    padded_paths, _ = pad_action_sequences(paths, pad_value=-100)
+
+    return mazes, padded_paths
 
 def pad_collate(batch):
     mazes, paths = zip(*batch)
