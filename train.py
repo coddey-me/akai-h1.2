@@ -13,13 +13,13 @@ from models.hrm_v2 import HRM_V2
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # === Hyperparameters ===
-maze_size = 50
+maze_size = 40
 batch_size = 32
 epochs = 100
 lr = 1e-3
 
 # === Data ===
-dataset = MazeDataset(n_samples=40000, size=maze_size)
+dataset = MazeDataset(n_samples=10000, size=maze_size)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: x)
 
 # === Model ===
