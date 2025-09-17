@@ -24,8 +24,8 @@ model.eval()
 # --- LOAD DATA ---
 maze_dataset = MazeDatasetV3(precomputed_file="precomputed_mazes.pt")
 
-from utils.collate_v3 import maze_collate_fn, collate_fn, safe_maze_collate
-
+from utils.collate_v3 import safe_maze_collate
+from torch.utils.data import DataLoader
 maze_loader = DataLoader(
     maze_dataset,
     batch_size=batch_size,
